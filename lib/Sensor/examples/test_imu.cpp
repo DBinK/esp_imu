@@ -18,22 +18,20 @@ void setup() {
         while (1) {}
     }
     
-    Serial.println("IMU begin...");
+    Serial.println("ICM42688 begin...");
+    analogWrite(2, 512);
 
-    // imu.calculateGyrBias(100);  // 计算陀螺仪Z轴零偏
+    imu.calculateGyrBias(100);  // 计算陀螺仪Z轴零偏
 }
 
 
 void loop() {
 
     imu.update();
-
-    // imu.getAccData(ax, ay, az);
-    // imu.getGyrData(gx, gy, gz);
-
-    // 显示原始数据
-    // Serial.printf("ax: %f\t ay: %f\t az: %f\t gx: %f\t gy: %f\t gz: %f\n", 
-    //              ax, ay, az, gx, gy, gz);
+    
+    // 显示数据
+    // Serial.printf("AccX: %f\t AccY: %f\t AccZ: %f\t GyrX: %f\t GyrY: %f\t GyrZ: %f\t Temp: %f\n", 
+    //              ax, ay, az, gx, gy, gz, temp);
 
     imu.getPitchRollYaw(pitch, roll, yaw);  // 获取姿态角
     deltat = imu.getDeltat() * 1000;        // ms
