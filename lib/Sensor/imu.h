@@ -31,6 +31,9 @@ public:
 
 private:
     // 成员变量保存传感器数据
+    
+    int16_t accelGyro[6] = {0};
+    
     float accX, accY, accZ;
     float gyrX, gyrY, gyrZ;
     float temp;

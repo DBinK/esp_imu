@@ -44,24 +44,12 @@ bool IMUClass::begin()
 
 void IMUClass::update()
 {
-    int rslt;
-    int16_t accelGyro[6] = {0};
-
-    rslt = bmi160.getAccelGyroData(accelGyro);
-
-    if (rslt == 0) {
-    // 保存加速度和角速度数据到成员变量
-    // accX = (accelGyro[0]);
-    // accY = (accelGyro[1]);
-    // accZ = (accelGyro[2]);
-    // gyrX = (accelGyro[3] ) - gyrXBias; // 减去零漂值
-    // gyrY = (accelGyro[4] ) - gyrYBias;
-    // gyrZ = (accelGyro[5] ) - gyrZBias;
+    if (bmi160.getAccelGyroData(accelGyro) == 0) {
 
     accX = (accelGyro[3] / 16384.0);
     accY = (accelGyro[4] / 16384.0);
     accZ = (accelGyro[5] / 16384.0);
-    
+
     gyrX = (accelGyro[0] * 3.14 / 180.0) - gyrXBias; // 减去零漂值
     gyrY = (accelGyro[1] * 3.14 / 180.0) - gyrYBias;
     gyrZ = (accelGyro[2] * 3.14 / 180.0) - gyrZBias;
