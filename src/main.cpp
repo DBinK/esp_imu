@@ -1,51 +1,53 @@
-#include <Arduino.h>
-#include "imu.h"
-#include "utility.h"
 
-IMUClass imu;  // 使用自定义引脚 IMUClass imu(10, 11, 12, 13);
-TimeDiff loop_dt;
-
-float gx, gy, gz, ax, ay, az;
-float pitch=0, roll=0, yaw=0;
-float deltat=0;
+#include <BMI160Gen.h>
 
 void setup() {
-    Serial.begin(115200);
-    while (!Serial) {}
+  Serial.begin(9600); // initialize Serial communication
+  while (!Serial);    // wait for the serial port to open
 
-    Serial.println("Start...");
-    
-    if (!imu.begin()) {
-        Serial.println("IMU initialization unsuccessful");
-        while (1) {}
-    }
-    
-    Serial.println("IMU begin...");
+  // initialize device
+  Serial.println("Initializing IMU device...");
+  //BMI160.begin(BMI160GenClass::SPI_MODE, /* SS pin# = */10);
+  BMI160.begin(BMI160GenClass::I2C_MODE);
+  uint8_t dev_id = BMI160.getDeviceID();
+  Serial.print("DEVICE ID: ");
+  Serial.println(dev_id, HEX);
 
-    // imu.calculateGyrBias(100);  // 计算陀螺仪Z轴零偏
+   // Set the accelerometer range to 250 degrees/second
+  BMI160.setGyroRange(250);
+  Serial.println("Initializing IMU device...done.");
 }
 
-
 void loop() {
+  int gxRaw, gyRaw, gzRaw;         // raw gyro values
+  float gx, gy, gz;
 
-    imu.update();
+  // read raw gyro measurements from device
+  BMI160.readGyro(gxRaw, gyRaw, gzRaw);
 
-    // imu.getAccData(ax, ay, az);
-    // imu.getGyrData(gx, gy, gz);
+  // convert the raw gyro data to degrees/second
+  gx = convertRawGyro(gxRaw);
+  gy = convertRawGyro(gyRaw);
+  gz = convertRawGyro(gzRaw);
 
-    // 显示原始数据
-    // Serial.printf("ax: %f\t ay: %f\t az: %f\t gx: %f\t gy: %f\t gz: %f\n", 
-    //              ax, ay, az, gx, gy, gz);
+  // display tab-separated gyro x/y/z values
+  Serial.print("g:\t");
+  Serial.print(gx);
+  Serial.print("\t");
+  Serial.print(gy);
+  Serial.print("\t");
+  Serial.print(gz);
+  Serial.println();
 
-    imu.getPitchRollYaw(pitch, roll, yaw);  // 获取姿态角
-    // deltat = imu.getDeltat() * 1000;        // ms
-    deltat = loop_dt.time_diff() / 1000;      // ms
-    
-    // 对于倒置的IMU，将pitch和roll加减180度
-    // pitch = (pitch > 0) ? (pitch - 180) : (pitch + 180);
-    // roll  =  (roll > 0) ?  (roll - 180) :  (roll + 180);
+  delay(500);
+}
 
-    Serial.printf("Pitch: %.2f\t Roll: %.2f\t Yaw: %.2f\t deltat: %.6f ms \n", pitch, roll, yaw, deltat);
+float convertRawGyro(int gRaw) {
+  // since we are using 250 degrees/seconds range
+  // -250 maps to a raw value of -32768
+  // +250 maps to a raw value of 32767
 
-    delay(1);
+  float g = (gRaw * 250.0) / 32768.0;
+
+  return g;
 }
